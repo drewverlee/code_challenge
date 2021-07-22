@@ -41,7 +41,7 @@
 (defn- rand-player [] (rand-nth players))
 
 (defn- rand-valid-move [moves & [player]]
-  (let [board (board-from moves) ; memoize?
+  (let [board (board-from moves) ; TODO memoize?
         avl-moves (available-moves board)]
     (assert (seq avl-moves) ; Make sure board's not full
             (str "No valid moves left on " board))
