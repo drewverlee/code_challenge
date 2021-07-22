@@ -21,8 +21,10 @@
 ;; CHALLENGE 1: Implement this function. See toehold.core-test/available-moves-test
 (defn available-moves [board]
   "Return all empty positions as [x y]"
-  ;; TODO note that project is unrunnable until this function is implemented
-  )
+  (for [x     (range (count board))
+        y     (range (count board))
+        :when (= :_ (get-in board [x y]))]
+    [x y]))
 
 (defn move [board [x y val]]
   (if (occupied? board x y)
