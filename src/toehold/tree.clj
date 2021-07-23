@@ -81,7 +81,7 @@
                                (winning-set (last moves)))]
             (or draw? one-winner?))) ]
 
-    (->> [9]
+    (->> (range 5 10)
          (mapcat #(combo/permuted-combinations (range 9) %))
          (filter moves->valid-end-of-game?)
          count))
