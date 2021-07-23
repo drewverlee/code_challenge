@@ -133,10 +133,11 @@
 ;; 3. Under what conditions is player 2 (O) guaranteed a win?
 
 ;; 3.1 Assuming both play players play optimally from the start. Never
-;; TODO prove
+;; TODO prove prove with code
 
 
 ;; 4. Can X get a win if they blow 1st move?
 
-;; TODO
-
+;; Without coding it I know the answer is No if the other player plays optimally.  Yes for anything other then that.
+;; TODO prove with code
+;; 1. The sub question is, what is and is there, an the optimal first move?
