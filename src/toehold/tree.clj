@@ -110,14 +110,6 @@
 
 ;; 1. What percentage of 100000 random games have no win?
 
-;; Roughly 12% based on this logic:
-(comment
-  (let [game-count        100000
-        ;; NOTE nil represents o win. It's like awkward here and kills the chance to use threading.
-        no-win-game-count (get (frequencies (repeatedly game-count (fn [] (win? (rand-game))))) nil 0)]
-    (* 100 (float (/ no-win-game-count game-count))))
-
-  )
 
 ;; 2. Given a partial game in a particular state, which player if any has
 ;;   a guaranteed win if they play optimally?
