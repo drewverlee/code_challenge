@@ -129,6 +129,12 @@ we do the same thing but for [2 1 0]."
   (first (drop-while (comp not full-or-win?)
                      (iterate stragety []))))
 
+(defn moves->print-board!
+  [moves]
+  (->> moves
+       ttt/board-from
+       (run! println)))
+
 (defn -main
   "Minimal usage example"
   [& args]

@@ -13,12 +13,6 @@
 ;; 1. What percentage of 100000 random games have no win?
 ;; Roughly 12% based on this logic:
 
-(defn moves->print-board!
-  [moves]
-  (->> moves
-       ttt/board-from
-       (run! println)))
-
 (defn strategy->draw-percentage
   [{:keys [strategy game-count] :or {game-count 100000}}]
   (let [;; NOTE nil represents no win. It's like awkward here and kills the chance to use threading.
