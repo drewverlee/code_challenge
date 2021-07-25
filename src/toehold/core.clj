@@ -1,6 +1,6 @@
 (ns toehold.core
-  (:require #_[clojure.core.logic :as l]
-            #_[clojure.core.logic.arithmetic :as la]
+  (:require [clojure.core.logic :as l]
+            [clojure.core.logic.arithmetic :as la]
             [clojure.pprint :refer [pprint]]
             [toehold.utils :refer [inspect]])
   (:gen-class))
