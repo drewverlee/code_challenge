@@ -11,7 +11,7 @@
 
 ;; Part one:  Brute force / treeless for generating all valid game states
 ;;
-;; I wanted to sketch something out first that would find all the possible games using a more brute force approach. This creates all permutations for a series of player moves (spots claimed) of sizes 5 and up to and including 9.
+;; I wanted to sketch something out fast first that would find all the possible games using a more brute force approach. This creates all permutations for a series of player moves (spots claimed) of sizes 5 and up to and including 9.
 ;; It then just has to validate that set of moves. I did a rough count in my head and it took around 40 seconds in my nrepl, but I suspect that could be halved by multithreaded solution.
 ;; In part I did it this way first because I'm not sure how to do a significant improve on the my next solution which will build the tree and try to memoize paths we have already seen.
 
@@ -62,6 +62,8 @@
 
 ;; This solution actually builds a tree, but doesn't keep it in memory as that exceeds the heap bounds I have set on my repl. It returns 255168 which is the correct solution of possible gains. It's self contained and doesn't use pre-existing functions because for the most part they don't specifically help the hard part of this question. Though It would be possible to refactor this idea to take advantage of the functions in core.
 
+;; I ended up not using context zip after thinking about it again because it's will be less space to just aggregate the games played. I believe the way content zipper could be used to _build_ a tree (not search it) would be to use the zipper/append-child function, but this would be more complex then simply conjing the children in a tree vector. The zipper library as a whole seems designed to help manual search trees. But I haven't had any experience with it before, so it's possible i'm missing something in the docs.
+
 (defn count-possible-games
   ([]
    (count-possible-games []))
@@ -90,6 +92,105 @@
   (count-possible-games)
   ;;=> 255168
   )
+
+;; CHALLENGE 3: Is it possible to rewrite build-tree so that it's significantly
+;; more efficient in time and/or space? If so, what strategies do you see for
+;; that? Implement one.
+
+;; I'm calling the function `count-possible-games` at least at the moment.
+;; Given the goal of counting all possible games. One thing we could do is memoize, which i believe would cut the tree search in half. To do that, we have to abstract one level higher though and just keep track of the player owned spots and not the order they played them. e.g
+
+;; [0 1 2 3] => {:x #{0 2} :o #{1 3}} now x playing 0 then 2 will be the same result as 2 and then 0... which from the games perspective it is. We can just add the last move to the smallest set of moves each times. for this question that doesn't matter, doing that leads to a bit more functionality then expected. Maybe it would better to keep track of whose turn it is? I'll just note that I also find this code to be somewhat hard to read, but it's compact, which means that it should make abstracting out bits easier later if necessary. For now, i'm not sure this approach is ideal, so there is no use sugar coating it. It gives the right answer.
+
+(defn count-possible-games-v2
+  ([]
+   (count-possible-games-v2 [#{} #{}]))
+  ([moves]
+   (let [taken-spots (apply set/union moves)]
+     (if
+         (or (= 9 (count taken-spots))
+             (seq
+               ;; board for reference
+               ;; 0 1 2
+               ;; 3 4 5
+               ;; 6 7 8
+               (for [win    [#{0 1 2} #{3 4 5} #{6 7 8}
+                             #{0 3 6} #{1 4 7} #{2 5 8}
+                             #{0 4 8} #{2 4 6}]
+                     pmoves moves
+                     :when  (set/subset? win (set pmoves))]
+                 pmoves)))
+       1
+       (reduce +
+               (map
+                 #(count-possible-games-v2
+                    (update (vec (sort-by count moves)) 0 (fn [current-player-spots] (conj current-player-spots %))))
+                 (set/difference  (set (range 9)) taken-spots)))))))
+
+(count
+  (count-possible-games-v2);; => 255168
+
+  )
+
+;; the Memoize version has to be different in one way, as we discussed earlier, x and o are indistinguishable from each other. We can also introduce a bit of parallelism to see if that speeds it up. We can't be sure, we have to time it.
+
+(defn count-possible-games-v3
+  [moves]
+  (let [taken-spots (apply set/union moves)]
+    (if
+        (or (= 9 (count taken-spots))
+            (seq
+              ;; board for reference
+              ;; 0 1 2
+              ;; 3 4 5
+              ;; 6 7 8
+              (for [win    [#{0 1 2} #{3 4 5} #{6 7 8}
+                            #{0 3 6} #{1 4 7} #{2 5 8}
+                            #{0 4 8} #{2 4 6}]
+                    pmoves moves
+                    :when  (set/subset? win (set pmoves))]
+                pmoves)))
+      1
+      (reduce +
+              (map
+                #(count-possible-games-v3
+                   (update (set (vec (sort-by count moves))) 0 (fn [current-player-spots] (conj current-player-spots %))))
+                (set/difference  (set (range 9)) taken-spots))))))
+
+(comment
+  ;; about 11 seconds if i count in my head...
+  (reduce +
+          (map
+            #(count-possible-games-v3 #{#{%} #{}})
+            (range 9)));; => 255168
+
+  ;; about 3 seconds!
+  (reduce +
+          (pmap
+            #(count-possible-games-v3 #{#{%} #{}})
+            (range 9)));; => 255168
+
+  ;; ok, oh yea and we wanted to memoize this...
+
+  )
+
+(def count-possible-games-v3-memoized (memoize count-possible-games-v3))
+
+(comment
+  ;; instant, lol, which means memoize is more then enough...
+  (reduce +
+          (map
+            #(count-possible-games-v3-memoized #{#{%} #{}})
+            (range 9)));; => 255168
+
+  ;; also instant for our multithreaded version
+  (reduce +
+          (pmap
+            #(count-possible-games-v3-memoized #{#{%} #{}})
+            (range 9)));; => 255168
+
+  )
+
 
 
 
@@ -127,11 +228,23 @@
   (strategy->draw-percentage {:strategy ttt/optimal-move})
   ;; => 100
 
-
-
-
   )
 
 
 ;; 2. Given a partial game in a particular state, which player if any has
 ;;   a guaranteed win if they play optimally?
+
+
+;; 3. Under what conditions is player 2 (O) guaranteed a win?
+
+;; 3.1 Assuming both play players play optimally from the start. Never
+;; TODO prove prove with code
+
+
+;; 4. Can X get a win if they blow 1st move?
+
+;; Without coding it I know the answer is No if the other player plays optimally.  Yes for anything other then that.
+;; TODO prove with code
+;; 4.1 The sub question is, what is and is there, an the optimal first move?
+
+
