@@ -19,6 +19,10 @@
               (assoc nd :children children))
             root))
 
+(defn v->nodes "Build a simple tree of nodes from a nested vector"
+  [vectr]
+  (node. (first vectr) (mapv v->nodes (rest vectr))))
+
 (defn content [loc] (:content (first loc)))
 
 (defn node-str

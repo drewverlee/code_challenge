@@ -5,10 +5,6 @@
             [clojure.zip :as z])
   (:import [toehold.tree node]))
 
-(defn v->nodes "Build a simple tree of nodes from a nested vector"
-  [vectr]
-  (node. (first vectr) (mapv v->nodes (rest vectr))))
-
 (def x1 [17 [3] [14 [23] [11 [8]]]])
 (def nodes (v->nodes x1))
 (def z1 (content-zipper nodes))
