@@ -248,3 +248,65 @@
 ;; 4.1 The sub question is, what is and is there, an the optimal first move?
 
 
+
+
+;; Bonus What about zippers?
+;; 1. What about zippers?
+;; 2. Mini tree
+
+;; 1. What about Zippers?
+
+;; So having never looked into zippers until this coding challenge, the impression I get scanning the docs is that they primarily useful navigate _existing_ and modifying existing tree structures. In this case, sense were building a tree, It wasn't at all clear how that would be useful. The question says to explain why or why not you would use one to build a tree.
+;; I would have discounted their usefulness all together for this except a zipper/loc will keep track of the path to the current tree were at. Which means, given the use of the content-zipper, we can see the moves that preceded the current location. Which i demonstrate here in a function which I hope to evolve into one that
+
+(defn build-zipper-tree
+  [loc l]
+  (cond
+    (and (-> loc z/node :children empty?) (seq l)) (do
+                                                     (println (map :content (flatten (z/path loc))))
+                                                     (recur (z/next (z/append-child loc (v->nodes (first l)))) (rest l)))
+    (z/branch? loc)                                (recur (z/next loc) l)
+    (z/end? loc)                                   loc
+    :else                                          loc))
+
+
+;; 2. Mini tree
+
+;; When i was building the tree functions that i later ended up just returning integers from (to count possible games). I wanted to test my idea on something I could see, so here is a mini 2x2 tick tac toe function and here is the output form it:
+
+(defn mini-build-moves
+  [moves]
+  (if (seq
+        (for [win    [#{0 1} #{2 3} #{0 2} #{2 1} #{1 3} #{3 0}]
+              pmoves [(take-nth 2 moves) (take-nth 2 (rest moves))]
+              :when  (set/subset? win (set pmoves))]
+          pmoves))
+    moves
+    (cons moves (map #(recur (conj moves %))
+                     (set/difference (set (range 4)) (set moves))))))
+
+(comment
+  ;;TODO this seems to be running forever. What changed? fix it!
+  (mini-build-moves [])
+
+  )
+
+;; => ([]
+;;     ([0]
+;;      ([0 1] ([0 1 2] ([0 1 2 3])) [0 1 3])
+;;      ([0 2] [0 2 1] [0 2 3])
+;;      ([0 3] [0 3 1] ([0 3 2] ([0 3 2 1]))))
+;;     ([1]
+;;      ([1 0] [1 0 2] ([1 0 3] ([1 0 3 2])))
+;;      ([1 2] [1 2 0] ([1 2 3] ([1 2 3 0])))
+;;      ([1 3] [1 3 0] [1 3 2]))
+;;     ([2]
+;;      ([2 0] [2 0 1] [2 0 3])
+;;      ([2 1] ([2 1 0] ([2 1 0 3])) [2 1 3])
+;;      ([2 3] ([2 3 0] ([2 3 0 1])) [2 3 1]))
+;;     ([3]
+;;      ([3 0] ([3 0 1] ([3 0 1 2])) [3 0 2])
+;;      ([3 1] [3 1 0] [3 1 2])
+;;      ([3 2] [3 2 0] ([3 2 1] ([3 2 1 0])))))
+
+
