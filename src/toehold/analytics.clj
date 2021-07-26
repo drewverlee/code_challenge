@@ -58,6 +58,40 @@
   ;; the 9th permutation returns less then it should.
   )
 
+;; Part two: Tree
+
+;; This solution actually builds a tree, but doesn't keep it in memory as that exceeds the heap bounds I have set on my repl. It returns 255168 which is the correct solution of possible gains. It's self contained and doesn't use pre-existing functions because for the most part they don't specifically help the hard part of this question. Though It would be possible to refactor this idea to take advantage of the functions in core.
+
+(defn count-possible-games
+  ([]
+   (count-possible-games []))
+  ([moves]
+   (if
+       (or (= 9 (count moves))
+           (seq
+             ;; board for reference
+             ;; 0 1 2
+             ;; 3 4 5
+             ;; 6 7 8
+             (for [win    [#{0 1 2} #{3 4 5} #{6 7 8}
+                           #{0 3 6} #{1 4 7} #{2 5 8}
+                           #{0 4 8} #{2 4 6}]
+                   pmoves [(take-nth 2 moves) (take-nth 2 (rest moves))]
+                   :when  (set/subset? win (set pmoves))]
+               pmoves)))
+     1
+     (reduce +
+             (map
+               #(count-possible-games (conj moves %))
+               (set/difference  (set (range 9)) (set moves)))))))
+
+
+(comment
+  (count-possible-games)
+  ;;=> 255168
+  )
+
+
 
 ;; Questions overview
 ;; CHALLENGE 4: write code to answer some of the following questions:
