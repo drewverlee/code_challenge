@@ -1,10 +1,7 @@
 (ns toehold.analytics
   (:require [toehold.core :as ttt]
-            [clojure.test :as t]
             [clojure.set :as set]
             [clojure.math.combinatorics :as combo]))
-
-
 
 ;; CHALLENGE 2: Write a function to build a tree of all possible games. Explain
 ;; why or why not it uses content-zipper (above).

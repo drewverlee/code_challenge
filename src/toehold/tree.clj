@@ -4,8 +4,7 @@
             [clojure.string :as string]
             [toehold.core :as c :refer :all]
             [clojure.math.combinatorics :as combo]
-            [clojure.set :as set]
-            [clojure.test :as t]))
+            [clojure.set :as set]))
 
 (defrecord node [content children])
 
