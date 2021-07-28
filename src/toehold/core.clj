@@ -81,13 +81,13 @@ we do the same thing but for [2 1 0]."
     (when (every? #(= % one) triplet)
       one)))
 
-(defn full-or-win? [moves]
-  (or (full? moves) (win? moves)))
-
 (defn win?
   "Given a list of moves, return the winning player (or nil if none)"
   [moves]
   (first (keep check-triplet (triplets (board-from moves)))))
+
+(defn full-or-win? [moves]
+  (or (full? moves) (win? moves)))
 
 (defn optimal-move [moves & [player]]
   (let [board                       (board-from moves) ; TODO memoize?
@@ -132,7 +132,7 @@ we do the same thing but for [2 1 0]."
 (defn moves->print-board!
   [moves]
   (->> moves
-       ttt/board-from
+       board-from
        (run! println)))
 
 (defn -main
