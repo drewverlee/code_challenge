@@ -145,7 +145,7 @@ we do the same thing but for [2 1 0]."
                       (filter #(win? (conj moves %)))
                       (map (fn [[x y]] [x y other-player])))
 
-                 (conj best-grid-spot current-player)]))))
+                 [(conj best-grid-spot current-player)]]))))
 
 (defn game-configuration->full-game-moves
   [{:keys [stragety moves] :or {moves    []
