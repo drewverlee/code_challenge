@@ -215,7 +215,7 @@
 (comment
 
   (strategy->draw-percentage {:strategy ttt/rand-valid-move})
-  ;; => 12.
+  ;; => 12.8
 
 
 
