@@ -10,10 +10,10 @@
 ;;
 ;; I wanted to sketch something out fast first that would find all the possible games using a more brute force approach. This creates all permutations for a series of player moves (spots claimed) of sizes 5 and up to and including 9.
 ;; It then just has to validate that set of moves. I did a rough count in my head and it took around 40 seconds in my nrepl, but I suspect that could be halved by multithreaded solution.
-;; In part I did it this way first because I'm not sure how to do a significant improve on the my next solution which will build the tree and try to memoize paths we have already seen.
+;; In part I did it this way first because I'm not sure how to do a significant improve on what I want to be my next solution, which will build the tree and try to memoize paths we have already seen.
 
 ;; I didn't use the content-zipper or any existing code here because I went with a treeless solution.
-;; NOTE i'm mildly worried the total valid end of game moves is off, something concerning the last set of permutations
+;; NOTE i'm worried the total valid end of game moves is off, something concerning the last set of permutations
 (comment
   (let [moves->valid-end-of-game?
         (fn [moves]
@@ -57,7 +57,7 @@
 
 ;; Part two: Tree
 
-;; This solution actually builds a tree, but doesn't keep it in memory as that exceeds the heap bounds I have set on my repl. It returns 255168 which is the correct solution of possible gains. It's self contained and doesn't use pre-existing functions because for the most part they don't specifically help the hard part of this question. Though It would be possible to refactor this idea to take advantage of the functions in core.
+;; This solution actually builds a tree, but doesn't keep it in memory as that exceeds the heap bounds I have set on my repl. It returns 255168 which is the correct solution of possible games. It's self contained and doesn't use pre-existing functions because for the most part they don't specifically help the hard part of this question. Though It would be possible to refactor this idea to take advantage of the functions in core.
 
 ;; I ended up not using context zip after thinking about it again because it's will be less space to just aggregate the games played. I believe the way content zipper could be used to _build_ a tree (not search it) would be to use the zipper/append-child function, but this would be more complex then simply conjing the children in a tree vector. The zipper library as a whole seems designed to help manual search trees. But I haven't had any experience with it before, so it's possible i'm missing something in the docs.
 
@@ -87,6 +87,7 @@
 
 (comment
   (count-possible-games)
+
   ;;=> 255168
   )
 
@@ -129,7 +130,7 @@
 
   )
 
-;; the Memoize version has to be different in one way, as we discussed earlier, x and o are indistinguishable from each other. We can also introduce a bit of parallelism to see if that speeds it up. We can't be sure, we have to time it.
+;; the Memoize version has to be different in one way, as we discussed earlier, in that x and o need to be indistinguishable from each other, so that we can half the work. We can also introduce a bit of parallelism to see if that speeds it up. We can't be sure, we have to time it.
 
 (defn count-possible-games-v3
   [moves]
@@ -174,7 +175,7 @@
 (def count-possible-games-v3-memoized (memoize count-possible-games-v3))
 
 (comment
-  ;; instant, lol, which means memoize is more then enough...
+  ;; !!!! This memoized version finishes instantly. 
   (reduce +
           (map
             #(count-possible-games-v3-memoized #{#{%} #{}})
@@ -186,9 +187,8 @@
             #(count-possible-games-v3-memoized #{#{%} #{}})
             (range 9)));; => 255168
 
+
   )
-
-
 
 
 ;; Questions overview
@@ -236,25 +236,38 @@
 ;; In a way we already have this, our strategy->game-output function just needs to be adapted
 
 
-(
- ;; for instance, we know that if player two lets player one have the center and a corner in the first three moves they will lose:
- (->> {:moves [[0 0 :x] [0 1 :o] [1 1 :x] ] :stragety ttt/optimal-move}
-      ttt/game-configuration->full-game-moves
-      ttt/win?);; => :x
+(comment
+  ;; for instance, we know that if player two lets player one have the center and a corner in the first three moves they will lose:
+  (->> {:moves [[0 0 :x] [0 1 :o] [1 1 :x] ] :stragety ttt/optimal-move}
+       ttt/game-configuration->full-game-moves
+       ttt/win?);; => :x
 
- ;; to be specific a player is guaranteed a win when they
- ;; 1. can win in 1 move
- ;; 2. can't lose in one move
- ;; 3. can threaten two ways of winning with their next move
+  ;; to be specific a player is guaranteed a win when they
+  ;; 1. can win in 1 move
+  ;; 2. can't lose in one move
+  ;; 3. can threaten two ways of winning with their next move
 
- )
+  )
 
 
 
 ;; 3. Under what conditions is player 2 (O) guaranteed a win?
 
 ;; 3.1 Assuming both play players play optimally from the start. Never
-;; TODO prove prove with code
+;; This would be the same could as starting from an init state as we demonstrated earlier.
+
+(comment
+  (strategy->draw-percentage {:strategy ttt/optimal-move})
+  ;; => 100
+
+
+
+
+
+
+  )
+
+
 
 ;; 4. Can X get a win if they blow 1st move?
 
@@ -265,7 +278,7 @@
 
 
 
-;; Bonus What about zippers?
+;; What about zippers?
 ;; 1. What about zippers?
 ;; 2. Mini tree
 
@@ -323,5 +336,3 @@
 ;;      ([3 0] ([3 0 1] ([3 0 1 2])) [3 0 2])
 ;;      ([3 1] [3 1 0] [3 1 2])
 ;;      ([3 2] [3 2 0] ([3 2 1] ([3 2 1 0])))))
-
-
