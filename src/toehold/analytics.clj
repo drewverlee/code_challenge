@@ -206,7 +206,8 @@
   [{:keys [strategy game-count] :or {game-count 100000}}]
   (let [;; NOTE nil represents no win. It's like awkward here and kills the chance to use threading.
         no-win-game-count (get (frequencies (repeatedly game-count
-                                                        (fn [] (ttt/win? (ttt/stragety->game-output strategy)))))
+                                                        (fn [] (ttt/win? (ttt/game-configuration->full-game-moves
+                                                                          {:stragety strategy})))))
                                nil
                                0)]
     (* 100 (float (/ no-win-game-count game-count)))))

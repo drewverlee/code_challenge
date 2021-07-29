@@ -120,14 +120,13 @@ we do the same thing but for [2 1 0]."
                                                                  [0 2 player]
                                                                  [2 0 player]
                                                                  [2 2 player]})
-
-                 ;; take whatever
-                 possible-player-moves]))))
-
-(defn stragety->game-output
-  [stragety]
+(defn game-configuration->full-game-moves
+  [{:keys [stragety moves] :or {moves    []
+                                stragety rand-valid-move}}]
   (first (drop-while (comp not full-or-win?)
-                     (iterate stragety []))))
+                     (iterate stragety moves ))))
+
+
 
 (defn moves->print-board!
   [moves]
