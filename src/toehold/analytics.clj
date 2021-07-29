@@ -274,16 +274,16 @@
 (defn mini-build-moves
   [moves]
   (if (seq
-        (for [win    [#{0 1} #{2 3} #{0 2} #{2 1} #{1 3} #{3 0}]
-              pmoves [(take-nth 2 moves) (take-nth 2 (rest moves))]
-              :when  (set/subset? win (set pmoves))]
-          pmoves))
+        (for [win   [#{0 1} #{2 3} #{0 2} #{2 1} #{1 3} #{3 0}]
+              pmove [(take-nth 2 moves) (take-nth 2 (rest moves))]
+              :when (set/subset? win (set pmove))]
+          pmove))
     moves
-    (cons moves (map #(recur (conj moves %))
-                     (set/difference (set (range 4)) (set moves))))))
+    (cons moves (map #(mini-build-moves (conj moves %))
+                     (set/difference (set (range 4)) (set moves) )))))
+
 
 (comment
-  ;;TODO this seems to be running forever. What changed? fix it!
   (mini-build-moves [])
 
   )
