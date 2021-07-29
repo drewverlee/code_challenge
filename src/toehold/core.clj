@@ -81,6 +81,7 @@ we do the same thing but for [2 1 0]."
     (when (every? #(= % one) triplet)
       one)))
 
+;; Todo consider renaming, it's not clear this will return the winning player as the suffix implies true/false. 
 (defn win?
   "Given a list of moves, return the winning player (or nil if none)"
   [moves]
