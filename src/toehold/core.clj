@@ -129,9 +129,7 @@ we do the same thing but for [2 1 0]."
                                       (sort-by val)
                                       reverse
                                       ffirst
-                                      flat-spot->grid-spot
-                                      )
-        ]
+                                      flat-spot->grid-spot)]
     (assert (seq avl-moves) ; Make sure board's not full
             (str "No valid moves left on " board))
     (conj moves
