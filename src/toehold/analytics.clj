@@ -232,12 +232,29 @@
 ;; 2. Given a partial game in a particular state, which player if any has
 ;;   a guaranteed win if they play optimally?
 
+;; The question can be answered in a couple different ways. The most straight forward of which is a function that takes a game state and returns the winner assuming both players play optimal.
+;; In a way we already have this, our strategy->game-output function just needs to be adapted
+
+
+(
+ ;; for instance, we know that if player two lets player one have the center and a corner in the first three moves they will lose:
+ (->> {:moves [[0 0 :x] [0 1 :o] [1 1 :x] ] :stragety ttt/optimal-move}
+      ttt/game-configuration->full-game-moves
+      ttt/win?);; => :x
+
+ ;; to be specific a player is guaranteed a win when they
+ ;; 1. can win in 1 move
+ ;; 2. can't lose in one move
+ ;; 3. can threaten two ways of winning with their next move
+
+ )
+
+
 
 ;; 3. Under what conditions is player 2 (O) guaranteed a win?
 
 ;; 3.1 Assuming both play players play optimally from the start. Never
 ;; TODO prove prove with code
-
 
 ;; 4. Can X get a win if they blow 1st move?
 

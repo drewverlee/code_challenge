@@ -90,13 +90,48 @@ we do the same thing but for [2 1 0]."
 (defn full-or-win? [moves]
   (or (full? moves) (win? moves)))
 
+(defn grid-spot->flat-spot
+  [[x y player]]
+  [(+ y (* x 3)) player])
+
+(defn flat-spot->grid-spot
+  [n]
+  [(int (/ n 3)) (mod n 3) ])
+
 (defn optimal-move [moves & [player]]
   (let [board                       (board-from moves) ; TODO memoize?
+        current-spot->player        (into {}      (map grid-spot->flat-spot moves))
         avl-moves                   (available-moves board)
-        player                      (or player (cur-player moves))
-        other-player                ({:x :o :o :x} player)
-        possible-player-moves       (map #(conj % player) avl-moves)
-        possible-other-player-moves (map #(conj % other-player) avl-moves)]
+        current-player              (or player (cur-player moves))
+        ;; TODO just use moves to get ppm and popm
+        other-player                ({:x :o :o :x} current-player) 
+        possible-player-moves       (map #(conj % current-player) avl-moves)
+        possible-other-player-moves (map #(conj % other-player) avl-moves)
+        best-grid-spot              (->>
+                                      ;; for every available spot create a possible future board and count how many triplets the potentially claimed
+                                      ;; spot would give the player. Take the highest  one
+                                      (for [available-spot (set/difference (set (range 9)) (-> current-spot->player keys set) )
+                                            :let           [possible-future-spot->player (assoc current-spot->player available-spot current-player)]
+                                            ;;TODO only use one way to get triplets in project
+                                            triplet        #{#{0 1 2} #{3 4 5} #{6 7 8}
+                                                             #{0 3 6} #{1 4 7} #{2 5 8}
+                                                             #{0 4 8} #{2 4 6}}
+                                            triplet-spot   triplet
+                                            :when          (and (triplet available-spot) (possible-future-spot->player triplet-spot))]
+                                        {:spot available-spot :player (possible-future-spot->player triplet-spot)})
+                                      (reduce
+                                        (fn [spot->score {:keys [spot player]}]
+                                          (update spot->score spot
+                                                  (if (= player current-player)
+                                                    (fnil inc 0)
+                                                    (fnil dec 0))))
+                                        {})
+                                      (sort-by val)
+                                      reverse
+                                      ffirst
+                                      flat-spot->grid-spot
+                                      )
+        ]
     (assert (seq avl-moves) ; Make sure board's not full
             (str "No valid moves left on " board))
     (conj moves
@@ -108,19 +143,10 @@ we do the same thing but for [2 1 0]."
                  ;; check what move would let the other player win and take it
                  (->> possible-other-player-moves
                       (filter #(win? (conj moves %)))
-                      (map (fn [[x y]] [x y player])))
+                      (map (fn [[x y]] [x y other-player])))
 
-                 ;; From here you take spaces based on how many triplets they touch the center touches the most
-                 ;; and is critical that it's take by the second player if they don't want to lose to another optimal player.
+                 (conj best-grid-spot current-player)]))))
 
-                 ;; take center
-                 (set/intersection (set possible-player-moves) #{[1 1 player]})
-
-                 ;; take corners
-                 (set/intersection (set possible-player-moves) #{[0 0 player]
-                                                                 [0 2 player]
-                                                                 [2 0 player]
-                                                                 [2 2 player]})
 (defn game-configuration->full-game-moves
   [{:keys [stragety moves] :or {moves    []
                                 stragety rand-valid-move}}]
