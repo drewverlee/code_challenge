@@ -201,7 +201,7 @@
 ;; 3. Under what conditions is player 2 (O) guaranteed a win?
 ;; 4. Can X get a win if they blow 1st move?
 
-;; 1. What percentage of 100000 random games have no win?
+;; 4.1. What percentage of 100000 random games have no win?
 ;; Roughly 12% based on this logic:
 
 (defn strategy->draw-percentage
@@ -231,7 +231,7 @@
   )
 
 
-;; 2. Given a partial game in a particular state, which player if any has
+;; 4.2. Given a partial game in a particular state, which player if any has
 ;;   a guaranteed win if they play optimally?
 
 ;; The question can be answered in a couple different ways. The most straight forward of which is a function that takes a game state and returns the winner assuming both players play optimal.
@@ -245,10 +245,9 @@
   )
 
 
+;; 4.3. Under what conditions is player 2 (O) guaranteed a win?
 
-;; 3. Under what conditions is player 2 (O) guaranteed a win?
-
-;; 3.1 Assuming both play players play optimally from the start. Never
+;; Assuming both play players play optimally from the start. Never
 ;; This would be the same could as starting from an init state as we demonstrated earlier.
 
 (comment
