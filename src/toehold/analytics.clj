@@ -155,6 +155,8 @@
                    (update (set (vec (sort-by count moves))) 0 (fn [current-player-spots] (conj current-player-spots %))))
                 (set/difference  (set (range 9)) taken-spots))))))
 
+
+;; Sense a set needs to contain unique items and both players start with no spots take (an empty set) we need some extra setup here. 
 (comment
   ;; about 11 seconds if i count in my head...
   (reduce +
