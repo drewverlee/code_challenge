@@ -239,16 +239,9 @@
 
 
 (comment
-  ;; for instance, we know that if player two lets player one have the center and a corner in the first three moves they will lose:
   (->> {:moves [[0 0 :x] [0 1 :o] [1 1 :x] ] :stragety ttt/optimal-move}
        ttt/game-configuration->full-game-moves
        ttt/win?);; => :x
-
-  ;; to be specific a player is guaranteed a win when they
-  ;; 1. can win in 1 move
-  ;; 2. can't lose in one move
-  ;; 3. can threaten two ways of winning with their next move
-
   )
 
 
